@@ -1,3 +1,4 @@
+import 'package:firebaseapp/sign_in_screen.dart';
 import 'package:firebaseapp/sign_up_email_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
@@ -61,7 +62,7 @@ class _SignUpOptionsScreenState extends State<SignUpOptionsScreen> {
                             decoration: TextDecoration.underline,
                             color: Colors.blue)),
                     onTap: () {
-                      print('Login tapped');
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=>SignInScreen()));
                     }))
           ]),
         ));

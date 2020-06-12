@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebaseapp/custom_drawer.dart';
 import 'package:firebaseapp/intro_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -23,8 +24,8 @@ class HomeScreen extends StatelessWidget {
               color: Colors.white,
             ),
             onPressed: () {
-
               firebaseAuth.signOut().then((res) {
+                print('User signed out...');
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (context) => IntroScreen()),
@@ -34,6 +35,7 @@ class HomeScreen extends StatelessWidget {
           )
         ],
       ),
+      drawer: CustomDrawer(userID: firebaseUser.uid),
       body: Center(
         child: Text('Welcome ${firebaseUser.email}'),
       ),

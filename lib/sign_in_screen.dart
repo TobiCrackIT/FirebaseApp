@@ -3,23 +3,21 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebaseapp/home_screen.dart';
 import 'package:flutter/material.dart';
 
-class SignUpEmailScreen extends StatefulWidget {
+class SignInScreen extends StatefulWidget {
   @override
-  _SignUpEmailScreenState createState() => _SignUpEmailScreenState();
+  _SignInScreenState createState() => _SignInScreenState();
 }
 
-class _SignUpEmailScreenState extends State<SignUpEmailScreen> {
+class _SignInScreenState extends State<SignInScreen> {
   final _formKey = GlobalKey<FormState>();
   bool isLoading = false;
 
   FirebaseAuth firebaseAuth = FirebaseAuth.instance;
   DatabaseReference dbRef =
-      FirebaseDatabase.instance.reference().child("Users");
+  FirebaseDatabase.instance.reference().child("Users");
 
   TextEditingController emailController = TextEditingController();
-  TextEditingController nameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-  TextEditingController ageController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +31,7 @@ class _SignUpEmailScreenState extends State<SignUpEmailScreen> {
                   SizedBox(
                     height: 60,
                   ),
-                  Text("Sign Up",
+                  Text("Sign In",
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 24,
@@ -43,23 +41,7 @@ class _SignUpEmailScreenState extends State<SignUpEmailScreen> {
                           fontWeight: FontWeight.bold,
                           fontSize: 10,
                           fontFamily: 'Roboto')),
-                  Padding(
-                    padding: EdgeInsets.all(20),
-                    child: TextFormField(
-                      controller: nameController,
-                      keyboardType: TextInputType.text,
-                      decoration: InputDecoration(
-                          labelText: 'Enter Username',
-                          enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10))),
-                      validator: (value) {
-                        if (value.isEmpty) {
-                          return 'Username cannot be empty';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
+
                   Padding(
                     padding: EdgeInsets.all(20),
                     child: TextFormField(
@@ -77,23 +59,7 @@ class _SignUpEmailScreenState extends State<SignUpEmailScreen> {
                       },
                     ),
                   ),
-                  Padding(
-                    padding: EdgeInsets.all(20),
-                    child: TextFormField(
-                      controller: ageController,
-                      keyboardType: TextInputType.numberWithOptions(),
-                      decoration: InputDecoration(
-                          labelText: 'Enter Age',
-                          enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10))),
-                      validator: (value) {
-                        if (value.isEmpty) {
-                          return 'Age cannot be empty';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
+
                   Padding(
                     padding: EdgeInsets.all(20),
                     child: TextFormField(
@@ -133,7 +99,7 @@ class _SignUpEmailScreenState extends State<SignUpEmailScreen> {
                         padding: const EdgeInsets.all(8.0),
                         child: CircularProgressIndicator(
                           valueColor:
-                              new AlwaysStoppedAnimation<Color>(Colors.green),
+                          new AlwaysStoppedAnimation<Color>(Colors.green),
                           strokeWidth: 2.0,
                         ),
                       ),
@@ -151,91 +117,32 @@ class _SignUpEmailScreenState extends State<SignUpEmailScreen> {
       isLoading = true;
     });
 
-    /*var result = await signUpWithEmail(
-        email: emailController.text, password: passwordController.text);
-
-    setState(() {
-      isLoading=false;
-    });
-
-    if(result??false){
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => MyHomePage()),
-      );
-    }*/
-
-    firebaseAuth
-        .createUserWithEmailAndPassword(
-            email: emailController.text, password: passwordController.text)
-        .then((value) {
-      dbRef.child(value.user.uid).set({
-        "email": emailController.text,
-        "age": ageController.text,
-        "name": nameController.text,
-      }).then((result) {
-        setState(() {
-          isLoading = false;
-        });
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-              builder: (context) => HomeScreen(
-                    firebaseUser: value.user,
-                  )),
-        );
-      });
-    }).catchError((error) {
-      setState(() {
-        isLoading = false;
-      });
-
-      showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text("Error"),
-              content: Text(error.message),
-              actions: [
-                FlatButton(
-                  child: Text("Ok"),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                )
-              ],
-            );
-          });
-    });
+    login();
   }
 
-  Future signUpWithEmail({
-    @required String email,
-    @required String password,
-  }) async {
-    try {
-      var authResult = await firebaseAuth.createUserWithEmailAndPassword(
-          email: email, password: password);
 
-      dbRef.set({
-        "email": emailController.text,
-        "age": ageController.text,
-        "name": nameController.text
-      });
+  void login() {
+    firebaseAuth
+        .signInWithEmailAndPassword(
+        email: emailController.text, password: passwordController.text)
+        .then((result) {
 
-      return authResult.user != null;
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
+          setState(() {
+            isLoading = false;
+          });
 
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen(firebaseUser: result.user)),
+      );
+    }).catchError((err) {
+      print(err.message);
       showDialog(
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
               title: Text("Error"),
-              content: Text(e.message),
+              content: Text(err.message),
               actions: [
                 FlatButton(
                   child: Text("Ok"),
@@ -246,15 +153,13 @@ class _SignUpEmailScreenState extends State<SignUpEmailScreen> {
               ],
             );
           });
-    }
+    });
   }
 
   @override
   void dispose() {
     super.dispose();
-    nameController.clear();
     emailController.clear();
     passwordController.clear();
-    ageController.clear();
   }
 }
